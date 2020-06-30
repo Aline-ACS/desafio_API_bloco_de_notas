@@ -3,10 +3,10 @@ const database = require('./database');
 const server = express();
 server.use(express.json());
 
-
 server.get('/', (req,res) => {
     return res.json({result: 'Desafio API bloco de notas'});
 });
+
 
 //inserir nota
 server.post('/notes', async (req,res) => {
@@ -19,8 +19,8 @@ server.post('/notes', async (req,res) => {
         .then(result => {
             inseriuNota = result
         })
-        .catch(err => {
-            return res.json('erro ao inserir nota');
+        .catch(error => {
+            return res.json(error);
     });
 
     if (inseriuNota[1]){
@@ -34,7 +34,7 @@ server.post('/notes', async (req,res) => {
 server.get('/notes', async (req,res) => {
     let notes;
 
-    await database.query(`SELECT * FROM desafio_api_bloco_de_notas`,
+    await database.query(`SELECT * FROM desafio_api_bloco_de_notas;`,
         {type: database.QueryTypes.SELECT})
         .then(results => {
             notes = results;
@@ -46,11 +46,11 @@ server.get('/notes', async (req,res) => {
 });
 
 //buscar uma nota pelo id
-server.get('/note', async (req,res) => {
+server.get('/notes/:id', async (req,res) => {
     let note;
-    const {id} = req.body;
+    const {id} = req.params;
 
-    await database.query(`SELECT * FROM desafio_api_bloco_de_notas WHERE id = ${id}`,
+    await database.query(`SELECT * FROM desafio_api_bloco_de_notas WHERE id = ${id};`,
         {type: database.QueryTypes.SELECT})
         .then(result => {
             note = result;
@@ -62,10 +62,9 @@ server.get('/note', async (req,res) => {
 });
 
 //deletar nota pelo id
-server.delete('/notes', async (req,res) => {   
+server.delete('/notes/:id', async (req,res) => {   
     let noteDelete;
-
-    const {id} = req.body;
+    const {id} = req.params;
 
     await database.query(`DELETE FROM desafio_api_bloco_de_notas WHERE id = ${id};`,
         {type: database.QueryTypes.DELETE})
@@ -82,15 +81,15 @@ server.delete('/notes', async (req,res) => {
 });
 
 //atualizar nota pelo id
-server.put('/notes', async (req,res) => {
-    let atualizarNota;
-
-    const {id, title, content, hour,date} = req.body;
+server.put('/notes/:id', async (req,res) => {
+    let noteUpdate;
+    const {id} = req.params;
+    const {title, content, hour,date} = req.body;
 
     await database.query(`UPDATE desafio_api_bloco_de_notas SET title = '${title}', content = '${content}', hour = '${hour}', date = '${date}' WHERE id = ${id};`,
         {type: database.QueryTypes.UPDATE})
         .then(result => {
-            atualizarNota = result
+            noteUpdate = result
         })
         .catch(err => {
             return res.json('erro ao inserir nota');
@@ -100,6 +99,5 @@ server.put('/notes', async (req,res) => {
         resul: 'nota atualizada com sucesso',
     });
 });
-
 
 server.listen(process.env.PORT);
